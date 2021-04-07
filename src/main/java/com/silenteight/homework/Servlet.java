@@ -23,19 +23,17 @@ public class Servlet
 	@RequestMapping("/1")
 	public Set<String> writeContentOfTheFile() throws IOException, Exception
 	{
-
 		return service.readFile();
 	}
 
-	@RequestMapping("/2")
+	@RequestMapping("/by-first-name")
 	@ResponseBody
 	public String guessingGenderByFirstName(@RequestParam(value = "name") String name) throws Exception
 	{
 		return "Gender: " + service.guessGenderByFirstName(name);
-
 	}
 
-	@RequestMapping("/3")
+	@RequestMapping("/by-majority-of-names")
 	@ResponseBody
 	public String guessingGenderByRuleOfMajority(@RequestParam(value = "name") String name) throws Exception
 	{

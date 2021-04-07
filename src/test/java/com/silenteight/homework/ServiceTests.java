@@ -19,8 +19,8 @@ class ServiceTests
 {
 	static final String MEN_MOCK_DATABASE_NAME = "men_ut8_test.txt";
 	static final String WOMEN_MOCK_DATABASE_NAME = "women_ut8_test.txt";
-	static final File MEN_MOCK_DATABASE = new File("src/main/resources/" + MEN_MOCK_DATABASE_NAME);
-	static final File WOMEN_MOCK_DATABASE = new File("src/main/resources/" + WOMEN_MOCK_DATABASE_NAME);
+	static final File MEN_MOCK_DATABASE = new File("src/test/resources/" + MEN_MOCK_DATABASE_NAME);
+	static final File WOMEN_MOCK_DATABASE = new File("src/test/resources/" + WOMEN_MOCK_DATABASE_NAME);
 	static final String MALE_NAME = "MALENAME";
 	static final String FEMALE_NAME = "FEMALENAME";
 	static final String INCONCLUSIVE_NAME = "INCONCLUSIVE";
@@ -57,7 +57,6 @@ class ServiceTests
 	@AfterAll
 	public static void deleteMockDatabase() throws Exception
 	{
-
 		MEN_MOCK_DATABASE.delete();
 		WOMEN_MOCK_DATABASE.delete();
 	}
@@ -85,6 +84,21 @@ class ServiceTests
 				Service.guessGenderByFirstName(createNameThreeMemberedWithGivenGenders(INCONCLUSIVE_NAME, MALE_NAME,
 						FEMALE_NAME)));
 	}
+
+	@Test
+	public void whenNamesAreNull_GuessGenderByFirstName_GivesInconclusive()
+			throws Exception
+	{
+		assertEquals(Service.RESULT_WHEN_INCONCLUSIVE, Service.guessGenderByFirstName(null));
+	}
+
+	@Test
+	public void whenNameIsSingular_GuessGenderByFirstName_GivesGenderOfName()
+			throws Exception
+	{
+		assertEquals(Service.RESULT_WHEN_MALE, Service.guessGenderByFirstName(MALE_NAME+(int) (Math.random() * 19)));
+	}
+
 
 	@Test
 	public void whenMajorityNamesAreMale_GuessGenderByRuleOfMajority_GivesMale() throws Exception
@@ -129,11 +143,26 @@ class ServiceTests
 	}
 
 	@Test
+	public void whenNamesAreNull_GuessGenderByRuleOfMajority_GivesInconclusive()
+			throws Exception
+	{
+		assertEquals(Service.RESULT_WHEN_INCONCLUSIVE,Service.guessGenderByRuleOfMajority(null));
+	}
+
+	@Test
+	public void whenNameIsSingular_GuessGenderByRuleOfMajority_GivesGenderOfName()
+			throws Exception
+	{
+		assertEquals(Service.RESULT_WHEN_MALE, Service.guessGenderByRuleOfMajority(MALE_NAME+(int) (Math.random() * 19)));
+	}
+
+
+	@Test
 	public void whenNamesAreDuplicated_GuessGenderByRuleOfMajority_GivesGenderWithMoreOccurences() throws Exception
 	{
 		assertEquals(Service.RESULT_WHEN_FEMALE,
-				Service.guessGenderByRuleOfMajority(createNameFiveMemberedWithGivenGendersWithDuplicates(MALE_NAME,
-						FEMALE_NAME, FEMALE_NAME)));
+				Service.guessGenderByRuleOfMajority(createNameThreeMemberedWithGivenGendersWithDuplicatedSecondName(MALE_NAME,
+						FEMALE_NAME)));
 	}
 
 	public String createNameThreeMemberedWithGivenGenders(String genderOfFirstName, String genderOfSecondName,
@@ -142,13 +171,13 @@ class ServiceTests
 		return genderOfFirstName + (int) (Math.random() * 19) + " " + genderOfSecondName + (int) (Math.random() * 19) + " " + genderOfThirdName + (int) (Math.random() * 19);
 	}
 
-	public String createNameFiveMemberedWithGivenGendersWithDuplicates(String genderOfFirstName,
-																	   String genderOfSecondName,
-																	   String genderOfThirdName)
+	public String createNameThreeMemberedWithGivenGendersWithDuplicatedSecondName(String genderOfFirstName,
+																	   String genderOfSecondName)
+
 	{
 		String firstName = genderOfFirstName + (int) (Math.random() * 19);
 		String secondName = genderOfSecondName + (int) (Math.random() * 19);
-		String thirdName = genderOfThirdName + (int) (Math.random() * 19);
-		return firstName + " " + thirdName + " " + secondName + " " + secondName + " " + firstName;
+
+		return firstName + " " + secondName + " " + secondName;
 	}
 }

@@ -46,6 +46,7 @@ public class Service
 
 	static public String guessGenderByFirstName(String name) throws Exception
 	{
+		if (name.indexOf(" ")>0)
 		name = name.substring(0, name.indexOf(" "));
 		String result = "";
 
@@ -104,7 +105,7 @@ public class Service
 					iterator = namesList.listIterator();
 				} else {
 					if (temp.equalsIgnoreCase(womenLine)) {
-						inCaseOfDraw = firstName.equalsIgnoreCase(temp) ? RESULT_WHEN_FEMALE : inCaseOfDraw;
+						inCaseOfDraw = firstName.equalsIgnoreCase(temp) ? RESULT_WHEN_PROBABLY_FEMALE : inCaseOfDraw;
 						womenCounter++;
 						namesList.remove(temp);
 						iterator = namesList.listIterator();

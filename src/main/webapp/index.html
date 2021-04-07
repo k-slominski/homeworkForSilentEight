@@ -2,11 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GUESSING GENDER BY GIVEN NAME</title>
     <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
           integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
 </head>
 <body>
+<main style="width: 55%; margin: 0 auto">
+    <div id="welcome" style="text-align: center">
+        <h1>Hey! Let me guess your gender by your names!</h1>
+    </div>
+        <form id="welcome-form" style="text-align: center"  >
+            <h2>Firstly choose what you want to do:</h2>
+            <button id="btn-guess-my-gender" class="pure-button pure-button-primary pure-u-1">Guess my gender</button>
+            <button id="btn-second-functionality" class="pure-button pure-button-primary pure-u-1">Second functionality</button>
+    </form>
+    <form id="way-of-guessing-form" class="pure-form" style="display: none; text-align: center">
+        <fieldset>
+            <input id="name-text" class="pure-input-rounded pure-input-2-3" name="name" placeholder="your names">
+            <button id="btn-guess-by-first-name" class="pure-button pure-button-primary pure-u-1" >Guess by first name</button>
+            <button id="btn-guess-by-majority-of-names" class="pure-button pure-button-primary pure-u-1">Guess by majority of names</button>
+        </fieldset>
+    </form>
+</main>
+<script>
+    (function () {
+
+        const API_URL = 'http://localhost:8080/api';
+        const GUESSING_BY_NAME_API_URL = `${API_URL}/by-first-name`;
+        const GUESSING_BY_MAJORITY_API_URL = `${API_URL}/by-majority-of-names`;
+
+        initWelcomeForm();
+        guessByFirstName();
+        guessByMajorityNames();
+
+        function initWelcomeForm() {
+            const welcomeForm = document.getElementById('welcome-form');
+
+            document.getElementById('btn-guess-my-gender').addEventListener('click', (event) => {
+                event.preventDefault();
+                welcomeForm.remove();
+                document.getElementById('way-of-guessing-form').style.display = 'block';
+            });
+        }
+
+        function guessByMajorityNames()
+        {
+            const wayOfGuessingForm = document.getElementById('way-of-guessing-form');
+
+            document.getElementById('btn-guess-by-majority-of-names').addEventListener('click',(event) => {
+                event.preventDefault();
+                fetch(`${GUESSING_BY_MAJORITY_API_URL}?${new URLSearchParams({name: wayOfGuessingForm.elements.name.value})}`)
+                    .then(response => response.text())
+                    .then((text) => {
+                        document.getElementById('welcome').innerHTML = `
+                <h1>${text}
+            `;
+            } );
+            })
+        }
+
+        function guessByFirstName()
+        {
+            const wayOfGuessingForm = document.getElementById('way-of-guessing-form');
+
+            document.getElementById('btn-guess-by-first-name').addEventListener('click',(event) => {
+                event.preventDefault();
+                fetch(`${GUESSING_BY_NAME_API_URL}?${new URLSearchParams({name: wayOfGuessingForm.elements.name.value})}`)
+                    .then(response => response.text())
+                    .then((text) => {
+                        document.getElementById('welcome').innerHTML = `
+                <h1>${text}
+            `;
+                    } );
+            })
+        }
+    })()
+
+</script>
 
 </body>
 </html>

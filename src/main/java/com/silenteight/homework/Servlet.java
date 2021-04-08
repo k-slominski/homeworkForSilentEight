@@ -1,16 +1,16 @@
 package com.silenteight.homework;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/api")
-public class Servlet
+class Servlet
 {
 	private final Service service;
 
@@ -20,25 +20,19 @@ public class Servlet
 	}
 
 	@ResponseBody
-	@RequestMapping("/1")
-	public Set<String> writeContentOfTheFile() throws IOException, Exception
+	@RequestMapping("/write-tokens")
+	ResponseEntity<Set<String>> writeContentOfTheFile(@RequestParam(value = "gender") String gender) throws Exception
 	{
-		return service.readFile();
+		return ResponseEntity.ok(service.readDatabase(gender));
 	}
 
-	@RequestMapping("/by-first-name")
 	@ResponseBody
-	public String guessingGenderByFirstName(@RequestParam(value = "name") String name) throws Exception
+	@RequestMapping("/guessing")
+	ResponseEntity<String> guessingGender(@RequestParam(value = "name") String name,
+										  @RequestParam(value = "method") String method) throws Exception
 	{
-		return "Gender: " + service.guessGenderByFirstName(name);
+		return ResponseEntity.ok("Gender: " + service.guessGender(name, method));
 	}
 
-	@RequestMapping("/by-majority-of-names")
-	@ResponseBody
-	public String guessingGenderByRuleOfMajority(@RequestParam(value = "name") String name) throws Exception
-	{
-		return "Gender: " + service.guessGenderByRuleOfMajority(name);
-
-	}
 
 }

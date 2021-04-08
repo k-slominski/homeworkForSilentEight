@@ -3,8 +3,8 @@ package com.silenteight.homework;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -15,8 +15,6 @@ public class Service
 	static final String RESULT_WHEN_MALE = " MALE ";
 	static final String RESULT_WHEN_FEMALE = " FEMALE ";
 	static final String RESULT_WHEN_INCONCLUSIVE = " INCONCLUSIVE ";
-	static final String RESULT_WHEN_PROBABLY_MALE = " PROBABLY MALE ";
-	static final String RESULT_WHEN_PROBABLY_FEMALE = " PROBABLY FEMALE ";
 
 	static private final String WOMEN_DATABASE_FILE_NAME = "women_utf8.txt";
 	static private final String MEN_DATABASE_FILE_NAME = "men_utf8.txt";
@@ -31,8 +29,8 @@ public class Service
 
 	static void setDataSource() throws URISyntaxException
 	{
-		URL resourceURLmen = Service.class.getResource("/" + MEN_DATABASE_FILE_NAME);
-		URL resourceURLwomen = Service.class.getResource("/" + WOMEN_DATABASE_FILE_NAME);
+		var resourceURLmen = Service.class.getResource("/" + MEN_DATABASE_FILE_NAME);
+		var resourceURLwomen = Service.class.getResource("/" + WOMEN_DATABASE_FILE_NAME);
 
 		menNamesDatabase = Paths.get(resourceURLmen.toURI()).toFile();
 		womenNamesDatabase = Paths.get(resourceURLwomen.toURI()).toFile();
@@ -44,114 +42,123 @@ public class Service
 		womenNamesDatabase = newWomenNamesDatabase;
 	}
 
-	static public String guessGenderByFirstName(String name) throws Exception
+	static String guessGenderByFirstName(String name) throws Exception
 	{
-		if (name.indexOf(" ")>0)
-		name = name.substring(0, name.indexOf(" "));
+		if (name == null) return RESULT_WHEN_INCONCLUSIVE;
+
+		if (name.indexOf(" ") > 0) name = name.substring(0, name.indexOf(" "));
+
+		return searchingFirstName(name, RESULT_WHEN_MALE, menNamesDatabase).equals(RESULT_WHEN_MALE) ? RESULT_WHEN_MALE
+				: searchingFirstName(name, RESULT_WHEN_FEMALE, womenNamesDatabase);
+
+	}
+
+	static String searchingFirstName(String name, String genderOfName, File databaseFile) throws Exception
+	{
 		String result = "";
-
-		try (BufferedReader readerMen = new BufferedReader(new FileReader(menNamesDatabase));
-			 BufferedReader readerWomen = new BufferedReader(new FileReader(womenNamesDatabase))) {
-
-			String menLine = readerMen.readLine().replaceFirst("^\uFEFF", "");
-			String womenLine = readerWomen.readLine().replaceFirst("^\uFEFF", "");
-
-			result = name.equalsIgnoreCase(menLine) ? RESULT_WHEN_MALE : name.equalsIgnoreCase(womenLine) ?
-					RESULT_WHEN_FEMALE : RESULT_WHEN_INCONCLUSIVE;
-
-			while ((menLine = readerMen.readLine()) != null && !result.equalsIgnoreCase(RESULT_WHEN_MALE)) {
-				if (name.equalsIgnoreCase(menLine)) {
-					result = RESULT_WHEN_MALE;
+		try {
+			var reader = new BufferedReader(new FileReader(databaseFile));
+			var line = reader.readLine().replaceFirst("^\uFEFF", "");
+			result = name.equalsIgnoreCase(line) ? genderOfName : RESULT_WHEN_INCONCLUSIVE;
+			while ((line = reader.readLine()) != null && !result.equalsIgnoreCase(genderOfName)) {
+				if (name.equalsIgnoreCase(line)) {
+					result = genderOfName;
 					break;
 				}
 			}
-			while ((womenLine = readerWomen.readLine()) != null && !result.equalsIgnoreCase(RESULT_WHEN_FEMALE)) {
-				if (name.equalsIgnoreCase(womenLine)) {
-					result = RESULT_WHEN_FEMALE;
-					break;
-				}
-			}
-
-		} catch(NullPointerException nle) {
-			nle.printStackTrace();
+			reader.close();
+		} catch(IOException e) {
+			e.printStackTrace();
 		}
 		return result;
 	}
 
 	static String guessGenderByRuleOfMajority(String name) throws Exception
 	{
-		List<String> namesList = new LinkedList<>(Arrays.asList(name.split(" ")));
-		ListIterator<String> iterator = namesList.listIterator();
+		if (name == null) return RESULT_WHEN_INCONCLUSIVE;
 
+		var namesList = new LinkedList<>(Arrays.asList(name.split(" ")));
+
+		var numberOfNames = namesList.size();
+
+		var namesStillToFind = namesToFind(namesList, menNamesDatabase);
+
+		var menCounter = numberOfNames - namesStillToFind.size();
+
+		if (menCounter * 2 > numberOfNames) return RESULT_WHEN_MALE;
+
+		var womenCounter = namesStillToFind.size() - namesToFind(namesStillToFind, womenNamesDatabase).size();
+
+		return menCounter > womenCounter ? RESULT_WHEN_MALE : menCounter < womenCounter ? RESULT_WHEN_FEMALE :
+				RESULT_WHEN_INCONCLUSIVE;
+
+	}
+
+	static List<String> namesToFind(List<String> names, File databaseFile) throws Exception
+	{
+		var iterator = names.listIterator();
 		String temp;
-		String inCaseOfDraw = RESULT_WHEN_INCONCLUSIVE;
-		String firstName = namesList.get(0);
 
-		int menCounter = 0;
-		int womenCounter = 0;
-
-		try (BufferedReader readerMen = new BufferedReader(new FileReader(menNamesDatabase));
-			 BufferedReader readerWomen = new BufferedReader(new FileReader(womenNamesDatabase))) {
-
-			String menLine = readerMen.readLine().replaceFirst("^\uFEFF", "");
-			String womenLine = readerWomen.readLine().replaceFirst("^\uFEFF", "");
-
+		try (var reader = new BufferedReader(new FileReader(databaseFile))) {
+			var line = reader.readLine().replaceFirst("^\uFEFF", "");
 			while (iterator.hasNext()) {
 				temp = iterator.next();
-				if (temp.equalsIgnoreCase(menLine)) {
-					inCaseOfDraw = firstName.equalsIgnoreCase(temp) ? RESULT_WHEN_PROBABLY_MALE : inCaseOfDraw;
-					menCounter++;
-					namesList.remove(temp);
-					iterator = namesList.listIterator();
-				} else {
-					if (temp.equalsIgnoreCase(womenLine)) {
-						inCaseOfDraw = firstName.equalsIgnoreCase(temp) ? RESULT_WHEN_PROBABLY_FEMALE : inCaseOfDraw;
-						womenCounter++;
-						namesList.remove(temp);
-						iterator = namesList.listIterator();
-					}
+				if (temp.equalsIgnoreCase(line)) {
+					names.remove(temp);
+					iterator = names.listIterator();
 				}
 			}
-			while ((menLine = readerMen.readLine()) != null) {
-				iterator = namesList.listIterator();
+			while ((line = reader.readLine()) != null) {
+				iterator = names.listIterator();
 				while (iterator.hasNext()) {
 					temp = iterator.next();
-					if (temp.equalsIgnoreCase(menLine)) {
-						menCounter++;
-						namesList.remove(temp);
-						iterator = namesList.listIterator();
-						inCaseOfDraw = firstName.equalsIgnoreCase(temp) ? RESULT_WHEN_PROBABLY_MALE : inCaseOfDraw;
-					}
-				}
-			}
-			while ((womenLine = readerWomen.readLine()) != null) {
-				iterator = namesList.listIterator();
-				while (iterator.hasNext()) {
-					temp = iterator.next();
-					if (temp.equalsIgnoreCase(womenLine)) {
-						womenCounter++;
-						namesList.remove(temp);
-						iterator = namesList.listIterator();
-						inCaseOfDraw = firstName.equalsIgnoreCase(temp) ? RESULT_WHEN_PROBABLY_FEMALE : inCaseOfDraw;
+					if (temp.equalsIgnoreCase(line)) {
+						names.remove(temp);
+						iterator = names.listIterator();
 					}
 				}
 			}
 		}
-
-		return menCounter > womenCounter ? RESULT_WHEN_MALE : menCounter < womenCounter ? RESULT_WHEN_FEMALE :
-				inCaseOfDraw;
+		return names;
 	}
 
-	Set<String> readFile() throws Exception
+	Set<String> readDatabase(String gender) throws Exception
 	{
 		Set<String> result = new HashSet<>();
-		try (BufferedReader reader = new BufferedReader(new FileReader(menNamesDatabase))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				result.add(line);
+		if (gender == null) return result;
+
+		switch (gender) {
+			case "male": {
+				result = readFile(menNamesDatabase);
+				break;
+			}
+			case "female": {
+				result = readFile(womenNamesDatabase);
+				break;
 			}
 		}
 		return result;
-
 	}
+
+	Set<String> readFile(File databaseFile) throws Exception
+	{
+		Set<String> setOfNames = new HashSet<>();
+		try (var reader = new BufferedReader(new FileReader(databaseFile))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				setOfNames.add(line);
+			}
+			reader.close();
+			return setOfNames;
+		}
+	}
+
+	String guessGender(String name, String method) throws Exception
+	{
+		return method.equalsIgnoreCase("first-name") ? guessGenderByFirstName(name)
+				: method.equalsIgnoreCase("majority-rule") ? guessGenderByRuleOfMajority(name)
+				: "Unknown parameter";
+	}
+
+
 }

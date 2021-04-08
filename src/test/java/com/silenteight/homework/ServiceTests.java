@@ -27,7 +27,7 @@ class ServiceTests
 
 
 	@BeforeAll
-	public static void createMockDatabase() throws IOException, Exception
+	public static void createMockDatabase() throws Exception
 	{
 		FileWriter menWriter = new FileWriter(MEN_MOCK_DATABASE);
 		FileWriter womenWriter = new FileWriter(WOMEN_MOCK_DATABASE);
@@ -45,7 +45,6 @@ class ServiceTests
 			womenWriter.close();
 			menWriter.close();
 		}
-
 		setDatabase();
 	}
 
@@ -134,10 +133,10 @@ class ServiceTests
 	}
 
 	@Test
-	public void whenOccurencesOfNamesAreEqual_GuessGenderByRuleOfMajority_GivesProbablyGenderByFirstName()
+	public void whenOccurencesOfNamesAreEqual_GuessGenderByRuleOfMajority_GivesInconclusive()
 			throws Exception
 	{
-		assertEquals(Service.RESULT_WHEN_PROBABLY_MALE,
+		assertEquals(Service.RESULT_WHEN_INCONCLUSIVE,
 				Service.guessGenderByRuleOfMajority(createNameThreeMemberedWithGivenGenders(MALE_NAME,
 						INCONCLUSIVE_NAME, FEMALE_NAME)));
 	}

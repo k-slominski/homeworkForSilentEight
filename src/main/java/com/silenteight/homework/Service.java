@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @org.springframework.stereotype.Service
@@ -15,7 +16,8 @@ public class Service
 	static final String RESULT_WHEN_INCONCLUSIVE = " INCONCLUSIVE ";
 
 	static final Logger log = LoggerFactory.getLogger(Service.class);
-	static final private String WOMEN_DATABASE_FILE_NAME = "bkb";//"women_utf8.txt";
+
+	static final private String WOMEN_DATABASE_FILE_NAME = "women_utf8.txt";
 	static final private String MEN_DATABASE_FILE_NAME = "men_utf8.txt";
 
 	static private File womenNamesDatabase;
@@ -41,7 +43,7 @@ public class Service
 	{
 		String result = "";
 
-		try (var reader = new BufferedReader(new InputStreamReader(inputStream))) {
+		try (var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
 			var line = reader.readLine().replaceFirst("^\uFEFF", "");
 			result = name.equalsIgnoreCase(line) ? genderOfName : RESULT_WHEN_INCONCLUSIVE;
 			while ((line = reader.readLine()) != null && !result.equalsIgnoreCase(genderOfName)) {
@@ -62,7 +64,7 @@ public class Service
 		var iterator = names.listIterator();
 		String temp;
 
-		try (var reader = new BufferedReader(new InputStreamReader(inputStream))) {
+		try (var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
 			var line = reader.readLine().replaceFirst("^\uFEFF", "");
 			while (iterator.hasNext()) {
 				temp = iterator.next();
@@ -164,7 +166,7 @@ public class Service
 	{
 		Set<String> setOfNames = new HashSet<>();
 
-		try (var reader = new BufferedReader(new InputStreamReader(inputStream))) {
+		try (var reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
 			String line;
 			while ((line = reader.readLine()) != null) {
 				setOfNames.add(line);

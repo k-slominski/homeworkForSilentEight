@@ -21,7 +21,7 @@ class Servlet
 
 	@ResponseBody
 	@RequestMapping("/write-tokens")
-	ResponseEntity<Set<String>> writeContentOfTheFile(@RequestParam(value = "gender") String gender) throws Exception
+	ResponseEntity<Set<String>> writeContentOfTheFile(@RequestParam(value = "gender") String gender)
 	{
 		return ResponseEntity.ok(service.readDatabase(gender));
 	}
@@ -29,7 +29,7 @@ class Servlet
 	@ResponseBody
 	@RequestMapping("/guessing")
 	ResponseEntity<String> guessingGender(@RequestParam(value = "name") String name,
-										  @RequestParam(value = "method") String method) throws Exception
+										  @RequestParam(value = "method") String method)
 	{
 		return ResponseEntity.ok("Gender: " + service.guessGender(name, method));
 	}
